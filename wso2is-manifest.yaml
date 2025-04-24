@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  # Define a namespace for organization
+  name: wso2is-local
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wso2is-db-pvc
+  namespace: wso2is-local # Apply to the namespace
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 56Mi # Adjust size if needed
+  # storageClassName: # Default is usually fine for local-path
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wso2is # Consistent naming
+  namespace: wso2is-local # Apply to the namespace
+  labels:
+    app: wso2is # Add label for selection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wso2is # Selector to match pods
+  template:
+    metadata:
+      labels:
+        app: wso2is # Label pods
+    spec:
+      securityContext:
+        fsGroup: 1000 # Set volume group permissions
+      volumes:
+        # Volume for the database using PVC
+        - name: wso2is-db-volume
+          persistentVolumeClaim:
+            claimName: wso2is-db-pvc # Reference the PVC
+        # Volume for deployment.toml using ConfigMap
+        - name: wso2is-config-volume
+          configMap:
+            name: wso2is-config # Reference the ConfigMap
+      initContainers:
+      - name: init-wso2is-db
+        image: wso2/wso2is:7.0.0-alpine
+        command: ['sh', '-c']
+        args: # Command to copy initial DBs if volume is empty
+          - |
+            DB_VOLUME_PATH="/mnt/db"; DB_FILE_CHECK="${DB_VOLUME_PATH}/WSO2CARBON_DB.mv.db"; IMAGE_DB_PATH="/home/wso2carbon/wso2is-7.0.0/repository/database"; echo "Checking for initial DB file at ${DB_FILE_CHECK}..."; if [ ! -f "${DB_FILE_CHECK}" ]; then echo "Initial DB files not found. Copying from ${IMAGE_DB_PATH}..."; cp ${IMAGE_DB_PATH}/*.mv.db "${DB_VOLUME_PATH}/"; echo "Copy complete."; else echo "DB files already exist. No action needed."; fi
+        volumeMounts:
+        - name: wso2is-db-volume
+          mountPath: /mnt/db # Temp mount for init container
+      containers:
+      - name: wso2is # Consistent naming
+        image: wso2/wso2is:7.0.0-alpine
+        ports:
+        # Ensure these ports match the offset in deployment.toml
+        - containerPort: 9453 # Default HTTPS
+          name: https
+        - containerPort: 9773 # Default HTTP
+          name: http
+        volumeMounts:
+        # Mount ConfigMap as deployment.toml
+        - name: wso2is-config-volume
+          mountPath: /home/wso2carbon/wso2is-7.0.0/repository/conf/deployment.toml
+          subPath: deployment.toml # Mount only this file
+        # Mount PVC for the database directory
+        - name: wso2is-db-volume
+          mountPath: /home/wso2carbon/wso2is-7.0.0/repository/database
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wso2is-service
+  namespace: wso2is-local # Apply to the namespace
+  labels:
+    app: wso2is # Add label
+spec:
+  type: LoadBalancer # Exposes on localhost via Rancher Desktop LB
+  selector:
+    app: wso2is # Selects pods with label 'app=wso2is'
+  ports:
+    - name: https-console
+      protocol: TCP
+      port: 9453 # Port to access on localhost (matches offset=10)
+      targetPort: 9453 # Port the container listens on (matches offset=10)
+    - name: http-internal
+      protocol: TCP
+      port: 9773 # Port to access on localhost (matches offset=10)
+      targetPort: 9773 # Port the container listens on (matches offset=10)

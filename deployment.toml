@@ -1,0 +1,188 @@
+[server]
+base_path = "https://$ref{server.hostname}:${carbon.management.port}"
+hostname = "localhost"
+node_ip = "127.0.0.1"
+offset = 10
+
+[super_admin]
+create_admin_account = true
+password = "admin"
+username = "admin"
+
+# [super_admin]
+# create_admin_account = true
+# username = "admin@wso2.com"
+# password = "admin"
+
+[user_store]
+type = "database_unique_id"
+# username_java_script_regex = '^[a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$'
+# username_java_regex = '^[a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}'
+
+# [tenant_mgt]
+# enable_email_domain= true
+
+[database.identity_db]
+password = "wso2carbon"
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2IDENTITY_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000"
+username = "wso2carbon"
+
+[database.shared_db]
+password = "wso2carbon"
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000"
+username = "wso2carbon"
+
+[keystore.primary]
+file_name = "wso2carbon.jks"
+password = "wso2carbon"
+type = "JKS"
+
+[truststore]
+file_name = "client-truststore.jks"
+password = "wso2carbon"
+type = "JKS"
+
+[account_recovery.endpoint.auth]
+hash = "66cd9688a2ae068244ea01e70f0e230f5623b7fa4cdecb65070a09ec06452262"
+
+[identity.auth_framework.endpoint]
+app_password = "dashboard"
+
+# The KeyStore which is used for encrypting/decrypting internal data. By default the primary keystore is used as the internal keystore.
+
+#[keystore.internal]
+#file_name = "$ref{keystore.primary.file_name}"
+#type = "$ref{keystore.primary.type}"
+#password = "$ref{keystore.primary.password}"
+#alias = "$ref{keystore.primary.alias}"
+#key_password = "$ref{keystore.primary.key_password}"
+
+# The KeyStore which is used for tls communication. By default the primary keystore is used as the tls keystore.
+
+#[keystore.tls]
+#file_name = "$ref{keystore.primary.file_name}"
+#type = "$ref{keystore.primary.type}"
+#password = "$ref{keystore.primary.password}"
+#alias = "$ref{keystore.primary.alias}"
+#key_password = "$ref{keystore.primary.key_password}"
+
+#Google reCAPTCHA settings.
+
+#[recaptcha]
+#enabled = true
+#api_url = "https://www.google.com/recaptcha/api.js"
+#verify_url = "https://www.google.com/recaptcha/api/siteverify"
+#site_key = ""
+#secret_key = ""
+
+# SMTP email sender settings.
+#[output_adapter.email]
+#from_address= "abcd@gmail.com"
+#username= "abcd"
+#password= "xxxx"
+#hostname= "smtp.gmail.com"
+#port= 587
+
+[[event_listener]]
+id = "token_revocation"
+name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+order = 1
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+[event_listener.properties]
+'header.X-WSO2-KEY-MANAGER' = "WSO2-IS"
+notification_endpoint = "https://localhost:9443/internal/data/v1/notify"
+password = "${admin.password}"
+username = "${admin.username}"
+
+[[resource.access_control]]
+context = "(.)/keymanager-operations/user-info/claims(.)"
+http_method = "GET"
+permissions = "/permission/admin/manage/identity/usermgt/list"
+scopes = "internal_user_mgt_list"
+secure = true
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/user-info/claims/generate"
+http_method = "POST"
+permissions = "/permission/admin/manage/identity/usermgt/list"
+scopes = "internal_user_mgt_list"
+secure = true
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register"
+http_method = "POST"
+permissions = "/permission/admin/manage/identity/applicationmgt/create"
+scopes = "internal_application_mgt_create"
+secure = true
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+http_method = "GET"
+permissions = "/permission/admin/manage/identity/applicationmgt/view"
+scopes = "internal_application_mgt_view"
+secure = true
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+http_method = "PUT"
+permissions = "/permission/admin/manage/identity/applicationmgt/update"
+scopes = "internal_application_mgt_update"
+secure = true
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+http_method = "POST"
+permissions = "/permission/admin/manage/identity/applicationmgt/update"
+scopes = "internal_application_mgt_update"
+secure = true
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+http_method = "DELETE"
+permissions = "/permission/admin/manage/identity/applicationmgt/delete"
+scopes = "internal_application_mgt_delete"
+secure = true
+
+[tenant_context.rewrite]
+custom_webapps = ["/keymanager-operations/"]
+
+[oauth]
+authorize_all_scopes = true
+
+[[resource.access_control]]
+context = "(.*)/scim2/Me"
+cross_tenant = true
+http_method = "GET"
+permissions = []
+scopes = []
+secure = true
+
+[cors]
+allowed_origins = [
+  "https://localhost:3000",
+  "http://localhost:3000",
+]
+supported_methods = [
+  "GET",
+  "POST",
+  "HEAD",
+  "OPTIONS",
+  "PUT",
+  "PATCH",
+  "HEAD",
+  "DELETE",
+  "PATCH",
+]
+
+[analytics.elk]
+enable = true
+
+# [identity_mgt.user_self_registration]
+# default_notification_channel = "SMS"
+# resolve_notification_channel = true
+
+# [identity_mgt.notification]
+# default_notification_channel = "SMS"
+# resolve_notification_channel = true

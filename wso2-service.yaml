@@ -1,0 +1,58 @@
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: wso2-service
+# spec:
+#   selector:
+#     app: wso2-web
+#   ports:
+#     - name: servlet-https
+#       port: 9453
+#       targetPort: 9453
+#       protocol: TCP
+#   type: NodePort
+  
+
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: wso2is-service
+# spec:
+#   selector:
+#     app: wso2is
+#   ports:
+#   - name: https
+#     port: 9453
+#     targetPort: 9453
+#   - name: http
+#     port: 9763
+#     targetPort: 9763
+#   type: ClusterIP
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wso2is-service # Name for the service
+  labels:
+    app: wso2is # Optional: Keep labels consistent
+spec:
+  # Use LoadBalancer type for Rancher Desktop's built-in LB
+  type: LoadBalancer
+  # This selector must match the labels on your Pods (defined in the Deployment template)
+  selector:
+    app: wso2is
+  ports:
+    - name: https-console # Descriptive name for the port
+      protocol: TCP
+      port: 9453         # The port you want to access on localhost (your Mac)
+      targetPort: 9453    # The port the container is listening on (containerPort in Deployment)
+    # You could also expose the HTTP port if needed
+    # - name: http-console
+    #   protocol: TCP
+    #   port: 9773         # Port on localhost (9763 + 10 offset)
+    #   targetPort: 9773    # Container port (should match offset-adjusted HTTP port)
+      # Note: Your Deployment only explicitly defines 9453 and 9763. If the offset applies
+      # to 9763 as well, the container might actually listen on 9773 for HTTP.
+      # Update your deployment's containerPort for HTTP if necessary.
