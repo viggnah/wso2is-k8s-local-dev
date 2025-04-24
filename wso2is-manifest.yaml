@@ -62,12 +62,14 @@ spec:
       containers:
       - name: wso2is # Consistent naming
         image: wso2/wso2is:7.0.0-alpine
+        
         ports:
         # Ensure these ports match the offset in deployment.toml
         - containerPort: 9453 # Default HTTPS
           name: https
         - containerPort: 9773 # Default HTTP
           name: http
+       
         volumeMounts:
         # Mount ConfigMap as deployment.toml
         - name: wso2is-config-volume
@@ -76,6 +78,40 @@ spec:
         # Mount PVC for the database directory
         - name: wso2is-db-volume
           mountPath: /home/wso2carbon/wso2is-7.0.0/repository/database
+
+        readinessProbe:
+          httpGet:
+            # Use the WSO2 IS 7.0 health check endpoint
+            path: /api/health-check/v1.0/health
+            # Reference the 'https' port name defined in your container ports
+            port: https
+            scheme: HTTPS
+          initialDelaySeconds: 30  # Wait 30s after container start before first probe
+          periodSeconds: 10     # Check every 10 seconds
+          failureThreshold: 3     # Mark as NotReady after 3 failures
+          successThreshold: 1     # Mark as Ready after 1 success
+          timeoutSeconds: 5       # Wait max 5s for response
+        startupProbe:
+          httpGet:
+            path: /api/health-check/v1.0/health
+            port: https
+            scheme: HTTPS
+          # Allow plenty of time for initial startup (e.g., 40 probes * 15s = 600s = 10 mins)
+          initialDelaySeconds: 60  # Wait 60s before the very first startup probe
+          periodSeconds: 15     # Check every 15 seconds during startup phase
+          failureThreshold: 40    # Allow up to 30 failures before restarting pod
+          successThreshold: 1
+          timeoutSeconds: 5
+        # Optional: Add a livenessProbe to restart if it becomes unresponsive later
+        # livenessProbe:
+        #   httpGet:
+        #     path: /api/health-check/v1.0/health
+        #     port: https
+        #     scheme: HTTPS
+        #   initialDelaySeconds: 180 # Start checking much later
+        #   periodSeconds: 30
+        #   failureThreshold: 3
+        #   timeoutSeconds: 5
 
 ---
 

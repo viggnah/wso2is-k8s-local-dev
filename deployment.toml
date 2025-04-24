@@ -179,6 +179,9 @@ supported_methods = [
 [analytics.elk]
 enable = true
 
+[carbon_health_check]
+enable= true
+
 # [identity_mgt.user_self_registration]
 # default_notification_channel = "SMS"
 # resolve_notification_channel = true

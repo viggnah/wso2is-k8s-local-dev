@@ -33,8 +33,8 @@ This configuration uses an **Init Container** to fix the common "Table UM_DOMAIN
     chmod +x setup.sh teardown.sh
     ./setup.sh
     ```
-4.  **Access Console:** Wait for the script to confirm success, then access `https://localh ost:9453/console` (or adjusted port). Login: `admin`/`admin`. Accept browser security warning for self-signed certificate.
-5.  **Remove:**
+4.  **Access Console:** Wait for the script to confirm success, then access `https://localhost:9453/console` (or adjusted port). Login: `admin`/`admin`. Accept browser security warning for self-signed certificate.
+5.  **Remove Completely:**
     ```bash
     ./teardown.sh
     ```
