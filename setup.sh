@@ -27,10 +27,12 @@ echo "Applying resources from ${MANIFEST_FILE}..."
 kubectl apply -f ${MANIFEST_FILE}
 
 echo ""
-echo "Waiting up to 5 minutes for deployment rollout to finish..."
-kubectl rollout status deployment/wso2is -n ${NAMESPACE} --timeout=5m
+echo "Waiting up to 11 minutes for deployment rollout to finish..."
+kubectl rollout status deployment/wso2is -n ${NAMESPACE} --timeout=11m -w # Shorthand for --watch=true
 
-if [ $? -eq 0 ]; then
+ROLLOUT_STATUS=$? # Capture exit status
+
+if [ ${ROLLOUT_STATUS} -eq 0 ]; then
   echo ""
   echo "Deployment successfully rolled out."
   echo "You can check status:"
