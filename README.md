@@ -26,14 +26,14 @@ This configuration uses an **Init Container** to fix the common "Table UM_DOMAIN
 
 ## Quick Start
 
-1.  **Clone:** `git clone <repository-url> && cd <repository-name>`
+1.  **Clone:** `git clone https://github.com/viggnah/wso2is-k8s-local-dev && cd wso2is-k8s-local-dev`
 2.  **(Optional) Customize:** Edit `deployment.toml` if needed (e.g., `[server].offset`). Ensure ports in `wso2is-manifest.yaml` match! Default uses ports 9453/9773 (offset 10).
 3.  **Deploy:**
     ```bash
     chmod +x setup.sh teardown.sh
     ./setup.sh
     ```
-4.  **Access Console:** Wait for the script to confirm success, then access `https://localhost:9453/console` (or adjusted port). Login: `admin`/`admin`. Accept browser security warning for self-signed certificate.
+4.  **Access Console:** Wait for the script to confirm success, then access `https://localh ost:9453/console` (or adjusted port). Login: `admin`/`admin`. Accept browser security warning for self-signed certificate.
 5.  **Remove:**
     ```bash
     ./teardown.sh
